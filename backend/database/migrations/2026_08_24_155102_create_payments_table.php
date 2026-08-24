@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('billing_id')
                 ->constrained('billings')
-                ->cascadeOnDelete();
+                ->restrictOnDelete();
             $table->date('payment_date');
-            $table->decimal('amount_paid', 12, 2);
+            $table->decimal('paid_amount', 12, 2);
             $table->decimal('interest_amount', 12, 2);
             $table->timestamps();
 

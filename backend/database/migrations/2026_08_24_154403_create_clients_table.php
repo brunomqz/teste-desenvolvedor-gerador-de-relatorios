@@ -16,10 +16,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('document')->unique();
             $table->string('email');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('phone');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->index('status');
+            $table->index('is_active');
             $table->index('name');
         });
     }
