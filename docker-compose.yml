@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: faturamento_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: faturamento
+      MYSQL_USER: faturamento
+      MYSQL_PASSWORD: faturamento
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: faturamento_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: faturamento
+      DB_USERNAME: faturamento
+      DB_PASSWORD: faturamento
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app_network
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist &&
+             php artisan key:generate --force &&
+             php artisan migrate --force &&
+             php artisan db:seed --force &&
+             php artisan serve --host=0.0.0.0 --port=8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: faturamento_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    command: sh -c "npm install && npm run dev"
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
