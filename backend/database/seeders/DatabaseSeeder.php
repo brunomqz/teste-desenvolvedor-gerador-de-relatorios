@@ -19,12 +19,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User para testes
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@admin.com',
-            'password' => bcrypt('admin123'),
-        ]);
-
+        User::updateOrCreate(
+            ['email' => 'admin@admin.com'],
+            [
+                'name' => 'Admin',
+                'password' => bcrypt('admin123'),
+            ]
+        );
         $this->command->info('Creating clients...');
         $clients = Client::factory(2000)->create();
 
