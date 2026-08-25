@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class ReportBillingRequest extends FormRequest
 {
@@ -24,13 +25,13 @@ class ReportBillingRequest extends FormRequest
     {
         return [
             'date_from' => ['required', 'date'],
-            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
+            'date_to'   => ['required', 'date', 'after_or_equal:date_from'],
             'date_base' => ['required', 'string', 'in:issue,due,payment'],
             'client_id' => ['nullable', 'integer', 'exists:clients,id'],
-            'status' => ['nullable', 'string', 'in:pending,paid'],
-            'sort_by' => ['nullable', 'string', 'in:issue_date,due_date,original_amount'],
-            'sort_dir' => ['nullable', 'string', 'in:asc,desc'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:200'],
+            'status'    => ['nullable', 'string', 'in:pending,paid'],
+            'sort_by'   => ['nullable', 'string', 'in:issue_date,due_date,original_amount'],
+            'sort_dir'  => ['nullable', 'string', 'in:asc,desc'],
+            'per_page'  => ['nullable', 'integer', 'min:1', 'max:200'],
         ];
     }
 
@@ -43,7 +44,7 @@ class ReportBillingRequest extends FormRequest
             if ($this->input('date_base') === 'payment' && $this->input('status') !== 'paid') {
                 $validator->errors()->add(
                     'date_base',
-                    'Para filtrar por data de pagamento, o filtro de status deve ser "paid".'
+                    'For payment date filtering, the status filter must be "paid".'
                 );
             }
         });

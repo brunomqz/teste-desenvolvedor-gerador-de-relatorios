@@ -24,6 +24,7 @@ class BillingFactory extends Factory
 
         return [
             'client_id' => Client::factory(),
+            'description' => fake()->sentence(4),
             'original_amount' => fake()->randomFloat(2, 100, 20000),
             'monthly_interest_rate' => fake()->randomFloat(4, 0.01, 0.12),
             'issue_date' => $issueDate,

@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReportController;
 
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:5,1');
@@ -22,4 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Payments
     Route::post('/billings/{billing}/payments', [PaymentController::class, 'store']);
+
+    // Reports
+    Route::get('/reports/billings', [ReportController::class, 'index']);
 });
