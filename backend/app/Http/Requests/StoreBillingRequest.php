@@ -12,7 +12,7 @@ class StoreBillingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,13 @@ class StoreBillingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'client_id' => ['required', 'integer', 'exists:clients,id'],
+            'description' => ['required', 'string', 'max:255'],
+            'original_amount' => ['required', 'numeric', 'min:0.01'],
+            'monthly_interest_rate' => ['required', 'numeric', 'min:0', 'max:99.9999'],
+            'issue_date' => ['required', 'date'],
+            'due_date' => ['required', 'date', 'after_or_equal:issue_date'],
+            'observations' => ['nullable', 'string'],
         ];
     }
 }
