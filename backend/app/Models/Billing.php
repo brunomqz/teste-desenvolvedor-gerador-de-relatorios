@@ -14,6 +14,7 @@ class Billing extends Model
 
         protected $fillable = [
         'client_id',
+        'description',
         'original_amount',
         'monthly_interest_rate',
         'issue_date',
