@@ -7,6 +7,7 @@ use App\Models\Billing;
 use App\Services\BillingReportService;
 use App\Services\InterestService;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ExportController extends Controller
 {
@@ -103,5 +104,62 @@ class ExportController extends Controller
             number_format($updated, 2, ',', '.'),
             number_format((float) $paidAmount, 2, ',', '.'),
         ], ';');
+    }
+
+    public function pdf(ReportBillingRequest $request)
+    {
+        $query = $this->reportService->sortedQuery($request);
+
+        $rows = [];
+        $totalOriginal = 0;
+        $totalInterest = 0;
+        $totalUpdated = 0;
+        $totalPaid = 0;
+        $totalPending = 0;
+
+        foreach ($query->cursor() as $billing) {
+            $updated = $this->interestService->updatedAmount($billing);
+            $interest = round($updated - (float) $billing->original_amount, 2);
+            $paidAmount = $billing->payments->sum('paid_amount');
+
+            $rows[] = [
+                'client_name' => $billing->client->name ?? '-',
+                'client_document' => $billing->client->document ?? '-',
+                'description' => $billing->description,
+                'issue_date' => $billing->issue_date->format('d/m/Y'),
+                'due_date' => $billing->due_date->format('d/m/Y'),
+                'status' => $billing->status,
+                'original_amount' => number_format((float) $billing->original_amount, 2, ',', '.'),
+                'interest' => number_format($interest, 2, ',', '.'),
+                'updated_amount' => number_format($updated, 2, ',', '.'),
+                'paid_amount' => number_format((float) $paidAmount, 2, ',', '.'),
+            ];
+
+            $totalOriginal += (float) $billing->original_amount;
+            $totalInterest += $interest;
+            $totalUpdated += $updated;
+
+            if ($billing->status === 'paid') {
+                $totalPaid += $updated;
+            } else {
+                $totalPending += $updated;
+            }
+        }
+
+        $pdf = Pdf::loadView('reports.billings-pdf', [
+            'filters' => $request->validated(),
+            'generatedAt' => now()->format('d/m/Y H:i'),
+            'rows' => $rows,
+            'totals' => [
+                'count' => count($rows),
+                'total_original_amount' => number_format($totalOriginal, 2, ',', '.'),
+                'total_interest' => number_format($totalInterest, 2, ',', '.'),
+                'total_updated_amount' => number_format($totalUpdated, 2, ',', '.'),
+                'total_paid' => number_format($totalPaid, 2, ',', '.'),
+                'total_pending' => number_format($totalPending, 2, ',', '.'),
+            ],
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('relatorio_faturamento_' . now()->format('Y-m-d_His') . '.pdf');
     }
 }
