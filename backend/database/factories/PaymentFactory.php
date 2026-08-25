@@ -18,7 +18,10 @@ class PaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'billing_id' => Billing::factory(),
+            'payment_date' => fake()->dateTimeBetween('-1 year', 'now'),
+            'paid_amount' => fake()->randomFloat(2, 100, 20000),
+            'interest_amount' => fake()->randomFloat(2, 0, 500),
         ];
     }
 }

@@ -18,7 +18,16 @@ class ClientFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => fake()->name(),
+            'document' => fake()->unique()->numerify('###.###.###-##'),
+            'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->numerify('(##) #####-####'),
+            'is_active' => fake()->boolean(87),
         ];
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn () => ['is_active' => false]);
     }
 }

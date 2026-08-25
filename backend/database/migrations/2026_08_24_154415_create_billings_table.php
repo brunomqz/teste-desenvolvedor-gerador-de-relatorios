@@ -17,7 +17,7 @@ return new class extends Migration
                 ->constrained('clients')
                 ->restrictOnDelete();
             $table->decimal('original_amount', 12, 2);
-            $table->decimal('monthly_interest_rate', 6, 4);
+            $table->decimal('monthly_interest_rate', 6, 4); // Taxa decimal 0.0250 = 2,5% ao mês
             $table->date('issue_date');
             $table->date('due_date');
             $table->string('status')->default('pending');

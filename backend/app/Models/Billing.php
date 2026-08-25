@@ -29,6 +29,15 @@ class Billing extends Model
         'due_date'              => 'date',
     ];
 
+    public function getConfirmStatus(): string 
+    {
+        if ($this->status === 'paid') {
+            return 'paid';
+        }
+
+        return $this->due_date->isPast() ? 'overdue' : 'pending';
+    }
+
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
