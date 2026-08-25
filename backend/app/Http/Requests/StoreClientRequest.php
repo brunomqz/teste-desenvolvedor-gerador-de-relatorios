@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\ValidDocument;
+use App\Services\DocumentValidationService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -37,7 +38,7 @@ class StoreClientRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'document' => ['sometimes', 'required', 'string', new ValidDocument, Rule::unique('clients', 'document')->ignore($clientId)],
+            'document' => ['sometimes', 'required', 'string', new ValidDocument, Rule::unique('clients', 'document')],
             'email' => ['sometimes', 'required', 'email', 'max:255'],
             'phone' => ['sometimes', 'required', 'string', 'max:20'],
             'is_active' => ['sometimes', 'boolean'],
