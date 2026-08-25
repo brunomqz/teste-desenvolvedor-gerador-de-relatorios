@@ -2,49 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests\ReportBillingRequest;
 use App\Models\Billing;
+use App\Services\BillingReportService;
 use App\Services\InterestService;
 use Illuminate\Http\JsonResponse;
 
 class ReportController extends Controller
 {
     public function __construct(
-        private readonly InterestService $interestService
+        private readonly InterestService $interestService,
+        private readonly BillingReportService $reportService
     ) {}
 
     public function index(ReportBillingRequest $request): JsonResponse
     {
-        $dateColumn = match ($request->string('date_base')->toString()) {
-            'issue' => 'billings.issue_date',
-            'due' => 'billings.due_date',
-            'payment' => 'payments.payment_date',
-        };
-
-        $query = Billing::query()
-            ->select('billings.*')
-            ->with('client:id,name,document')
-            ->when($request->string('date_base') === 'payment', function ($q) {
-                $q->join('payments', 'payments.billing_id', '=', 'billings.id')
-                    ->addSelect('payments.payment_date as payment_date_ref');
-            })
-            ->whereDate($dateColumn, '>=', $request->date('date_from'))
-            ->whereDate($dateColumn, '<=', $request->date('date_to'));
-
-        if ($request->filled('client_id')) {
-            $query->where('billings.client_id', $request->integer('client_id'));
-        }
-
-        if ($request->filled('status')) {
-            $query->where('billings.status', $request->string('status'));
-        }
-
-        $sortField = 'billings.' . $request->get('sort_by', 'due_date');
-        $sortDirection = $request->get('sort_dir', 'asc');
-
-        $paginated = (clone $query)
-            ->orderBy($sortField, $sortDirection)
+        $paginated = $this->reportService->sortedQuery($request)
             ->paginate($request->integer('per_page', 15));
 
         $paginated->getCollection()->transform(function (Billing $billing) {
@@ -52,7 +25,7 @@ class ReportController extends Controller
             return $billing;
         });
 
-        $totals = $this->calculateTotals(clone $query);
+        $totals = $this->calculateTotals($request);
 
         return response()->json([
             'data' => $paginated->items(),
@@ -66,10 +39,11 @@ class ReportController extends Controller
         ]);
     }
 
-    private function calculateTotals($query): array
+    private function calculateTotals(ReportBillingRequest $request): array
     {
-        // Só os campos necessários, sem carregar o billing inteiro nem os relacionamentos
-        $billings = $query->select('billings.id', 'billings.original_amount', 'billings.status', 'billings.monthly_interest_rate', 'billings.due_date')->get();
+        $billings = $this->reportService->filteredQuery($request)
+            ->select('billings.id', 'billings.original_amount', 'billings.status', 'billings.monthly_interest_rate', 'billings.due_date')
+            ->get();
 
         $totalOriginal = 0;
         $totalInterest = 0;

@@ -7,7 +7,7 @@ use App\Models\Client;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-/**
+/** 
  * @extends Factory<Billing>
  */
 class BillingFactory extends Factory

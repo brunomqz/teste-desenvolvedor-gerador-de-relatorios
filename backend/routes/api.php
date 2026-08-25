@@ -7,6 +7,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ExportController;
 
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:5,1');
@@ -26,4 +27,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Reports
     Route::get('/reports/billings', [ReportController::class, 'index']);
+    Route::get('/reports/billings/export/csv', [ExportController::class, 'csv']);
 });
