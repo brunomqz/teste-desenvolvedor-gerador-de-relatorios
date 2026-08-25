@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('issue_date');
             $table->date('due_date');
             $table->string('status')->default('pending');
+            $table->text('description');
             $table->text('observations')->nullable();
             $table->timestamps();
 

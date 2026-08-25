@@ -1,4 +1,4 @@
-<?php
+docker compose exec backend php artisan make:migration add_description_to_billings_table --table=billings<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
