@@ -6,6 +6,7 @@ use App\Rules\ValidDocument;
 use App\Services\DocumentValidationService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateClientRequest extends FormRequest
 {
