@@ -34,6 +34,8 @@ class UpdateClientRequest extends FormRequest
      */
     public function rules(): array
     {
+        $clientId = $this->route('client')->id;
+
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'document' => ['sometimes', 'required', 'string', new ValidDocument, Rule::unique('clients', 'document')->ignore($clientId)],
