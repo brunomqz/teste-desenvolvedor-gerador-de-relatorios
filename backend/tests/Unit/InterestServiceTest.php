@@ -2,32 +2,16 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
+use App\Models\Billing;
+use App\Services\InterestService;
+use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class InterestServiceTest extends TestCase
 {
+    use RefreshDatabase;
 
-    /**
-     * Verifica se uma cobrança paga não acumula juros.
-     */
-    public function test_paid_billing_never_accrues_interest(): void
-    {
-        $billing = Billing::factory()->create([
-            'status' => 'paid',
-            'original_amount' => 1000,
-            'monthly_interest_rate' => 0.05,
-            'due_date' => Carbon::today()->subDays(30),
-        ]);
-
-        $updated = app(InterestService::class)->updatedAmount($billing);
-
-        $this->assertEquals(1000.00, $updated);
-    }
-
-
-    /**
-     * Verifica se uma cobrança vencida acumula juros compostos.
-     */
     public function test_overdue_billing_accrues_compound_interest(): void
     {
         $billing = Billing::factory()->create([
@@ -43,10 +27,20 @@ class InterestServiceTest extends TestCase
         $this->assertEquals(1050.00, $updated);
     }
 
+    public function test_paid_billing_never_accrues_interest(): void
+    {
+        $billing = Billing::factory()->create([
+            'status' => 'paid',
+            'original_amount' => 1000,
+            'monthly_interest_rate' => 0.05,
+            'due_date' => Carbon::today()->subDays(30),
+        ]);
 
-    /**
-     * Verifica se uma cobrança que ainda não venceu não acumula juros.
-     */
+        $updated = app(InterestService::class)->updatedAmount($billing);
+
+        $this->assertEquals(1000.00, $updated);
+    }
+
     public function test_billing_not_yet_due_has_no_interest(): void
     {
         $billing = Billing::factory()->create([
@@ -59,5 +53,16 @@ class InterestServiceTest extends TestCase
         $updated = app(InterestService::class)->updatedAmount($billing);
 
         $this->assertEquals(1000.00, $updated);
+    }
+
+    public function test_overdue_days_calculation(): void
+    {
+        $billing = Billing::factory()->create([
+            'due_date' => Carbon::today()->subDays(15),
+        ]);
+
+        $overdueDays = app(InterestService::class)->overdueDays($billing);
+
+        $this->assertEquals(15, $overdueDays);
     }
 }
